@@ -128,7 +128,8 @@
             fileList            = document.getElementById("file-list"),
             filenameInput       = document.getElementById("filename-input"),
             creationMethodInput = document.getElementById("creation-method-input")
-            uploadButton        = document.getElementById("upload-button");
+            uploadButton        = document.getElementById("upload-button"),
+            statusLabel         = document.getElementById("status");
 
         if (typeof requestFileSystem == "undefined") creationMethodInput.options.length = 1;
 
@@ -191,9 +192,12 @@
 
                 // configure request
                 request.open("POST","/upload", true);
-                request.onreadystatechange = function () {
-
-                    console.log(arguments);
+                request.onreadystatechange = function (event) {
+                    console.log(event.target.readyState);
+                    if (event.target.readyState == 4) {
+                        statusLabel.innerHTML = "Done";
+                    }
+                    //console.log(arguments);
                 };
 
                 // execute request
