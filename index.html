@@ -1,0 +1,56 @@
+<html>
+<head>
+	<title>Client-side ZIP upload POC</title>
+</head>
+<body>
+<html>
+
+	<form action="/upload" method="post" enctype="multipart/form-data">
+		<input type="file" name="file">
+		<input type="submit" value="Upload">
+	</form>
+
+	<div id="container">
+		
+		<h1>Client-side ZIP upload POC</h1>
+		
+		<ol id="demo-container">
+			<li>
+				<label>
+					<span class="form-label">choose temporary storage</span>
+					<select id="creation-method-input">
+						<option value="Blob">RAM</option>
+						<option value="File">HDD</option>
+					</select>
+				</label>
+			</li>
+			<li>
+				<label>
+					<span class="form-label">add files into the zip</span>
+					<input type="file" multiple id="file-input">
+				</label>
+			</li>
+			<li>
+				<span class="form-label">view zip content</span>
+				<ul id="file-list">
+				</ul>
+			</li>
+			<li>
+				<label>
+					<span class="form-label">set zip file name</span>
+					<input type="text" id="filename-input" value="Example.zip">
+				</label>
+			</li>
+			<li>
+				<span class="form-label">download the zip file</span>
+				<a id="download-button" href="#">Download</a>
+			</li>
+		</ol>
+
+	</div>
+
+	<script type="text/javascript" src="/js/zip.js"></script>
+	<script type="text/javascript" src="/js/dataview.js"></script>
+	<script type="text/javascript" src="/js/client_poc.js"></script>
+</body>
+</html>

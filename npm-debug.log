@@ -1,0 +1,106 @@
+info it worked if it ends with ok
+verbose cli [ 'node', '/usr/bin/npm', 'install' ]
+info using npm@1.1.4
+info using node@v0.6.12
+verbose config file /home/marcooliveira/.npmrc
+verbose config file /usr/etc/npmrc
+verbose config file /usr/share/npm/npmrc
+verbose caching /home/marcooliveira/Documents/megamedia/zip_upload_poc/package.json
+verbose loadDefaults zip-upload-POC@0.0.1
+verbose readDependencies: using package.json deps
+verbose where, deps [ '/home/marcooliveira/Documents/megamedia/zip_upload_poc',
+verbose where, deps   [ 'express', 'dataview', 'zipjs' ] ]
+verbose from cache /home/marcooliveira/Documents/megamedia/zip_upload_poc/package.json
+info preinstall zip-upload-POC@0.0.1
+verbose caching /home/marcooliveira/Documents/megamedia/zip_upload_poc/node_modules/express/package.json
+verbose from cache /home/marcooliveira/Documents/megamedia/zip_upload_poc/package.json
+verbose readDependencies: using package.json deps
+verbose from cache /home/marcooliveira/Documents/megamedia/zip_upload_poc/node_modules/express/package.json
+verbose already installed in /home/marcooliveira/Documents/megamedia/zip_upload_poc skipping express@3.0.x
+verbose cache add [ 'dataview@https://github.com/davidflanagan/DataView.js/tarball/master',
+verbose cache add   null ]
+silly cache add: name, spec, args [ undefined,
+silly cache add: name, spec, args   'dataview@https://github.com/davidflanagan/DataView.js/tarball/master',
+silly cache add: name, spec, args   [ 'dataview@https://github.com/davidflanagan/DataView.js/tarball/master',
+silly cache add: name, spec, args     null ] ]
+verbose parsed url { pathname: 'dataview@https://github.com/davidflanagan/DataView.js/tarball/master',
+verbose parsed url   path: 'dataview@https://github.com/davidflanagan/DataView.js/tarball/master',
+verbose parsed url   href: 'dataview@https://github.com/davidflanagan/DataView.js/tarball/master' }
+silly cache add: name, spec, args [ 'dataview',
+silly cache add: name, spec, args   'https://github.com/davidflanagan/DataView.js/tarball/master',
+silly cache add: name, spec, args   [ 'dataview',
+silly cache add: name, spec, args     'https://github.com/davidflanagan/DataView.js/tarball/master' ] ]
+verbose parsed url { protocol: 'https:',
+verbose parsed url   slashes: true,
+verbose parsed url   host: 'github.com',
+verbose parsed url   hostname: 'github.com',
+verbose parsed url   href: 'https://github.com/davidflanagan/DataView.js/tarball/master',
+verbose parsed url   pathname: '/davidflanagan/DataView.js/tarball/master',
+verbose parsed url   path: '/davidflanagan/DataView.js/tarball/master' }
+verbose addRemoteTarball [ 'https://github.com/davidflanagan/DataView.js/tarball/master',
+verbose addRemoteTarball   null ]
+verbose mkdir (expected) error ENOENT, no such file or directory '/tmp/npm-1343836470086'
+verbose mkdir (expected) error ENOENT, no such file or directory '/tmp/npm-1343836470086/1343836470086-0.46689682081341743'
+verbose mkdir done: /tmp/npm-1343836470086/1343836470086-0.46689682081341743 755
+verbose cache add [ 'zipjs@http://github.com/gildas-lormeau/zip.js/tarball/master',
+verbose cache add   null ]
+silly cache add: name, spec, args [ undefined,
+silly cache add: name, spec, args   'zipjs@http://github.com/gildas-lormeau/zip.js/tarball/master',
+silly cache add: name, spec, args   [ 'zipjs@http://github.com/gildas-lormeau/zip.js/tarball/master',
+silly cache add: name, spec, args     null ] ]
+verbose parsed url { pathname: 'zipjs@http://github.com/gildas-lormeau/zip.js/tarball/master',
+verbose parsed url   path: 'zipjs@http://github.com/gildas-lormeau/zip.js/tarball/master',
+verbose parsed url   href: 'zipjs@http://github.com/gildas-lormeau/zip.js/tarball/master' }
+silly cache add: name, spec, args [ 'zipjs',
+silly cache add: name, spec, args   'http://github.com/gildas-lormeau/zip.js/tarball/master',
+silly cache add: name, spec, args   [ 'zipjs',
+silly cache add: name, spec, args     'http://github.com/gildas-lormeau/zip.js/tarball/master' ] ]
+verbose parsed url { protocol: 'http:',
+verbose parsed url   slashes: true,
+verbose parsed url   host: 'github.com',
+verbose parsed url   hostname: 'github.com',
+verbose parsed url   href: 'http://github.com/gildas-lormeau/zip.js/tarball/master',
+verbose parsed url   pathname: '/gildas-lormeau/zip.js/tarball/master',
+verbose parsed url   path: '/gildas-lormeau/zip.js/tarball/master' }
+verbose addRemoteTarball [ 'http://github.com/gildas-lormeau/zip.js/tarball/master',
+verbose addRemoteTarball   null ]
+verbose fetch to /tmp/npm-1343836470086/1343836470086-0.46689682081341743/tmp.tgz
+http GET https://github.com/davidflanagan/DataView.js/tarball/master
+verbose mkdir (expected) error ENOENT, no such file or directory '/tmp/npm-1343836470086/1343836470088-0.3711731487419456'
+verbose mkdir done: /tmp/npm-1343836470086/1343836470088-0.3711731487419456 755
+verbose fetch to /tmp/npm-1343836470086/1343836470088-0.3711731487419456/tmp.tgz
+http GET http://github.com/gildas-lormeau/zip.js/tarball/master
+http 200 https://github.com/davidflanagan/DataView.js/tarball/master
+verbose mkdir (expected) error ENOENT, no such file or directory '/tmp/npm-1343836470086/1343836470086-0.46689682081341743/___package.npm'
+verbose mkdir done: /tmp/npm-1343836470086/1343836470086-0.46689682081341743/___package.npm 755
+verbose unpack_ uid, gid [ undefined, undefined ]
+verbose unpackTarget /tmp/npm-1343836470086/1343836470086-0.46689682081341743/package
+silly gunzTarPerm modes [ '755', '644' ]
+silly afterUntar ok
+silly asyncMap in gTP /tmp/npm-1343836470086/1343836470086-0.46689682081341743/___package.npm/davidflanagan-DataView.js-a18def7
+silly asyncMap in gTP /tmp/npm-1343836470086/1343836470086-0.46689682081341743/___package.npm/davidflanagan-DataView.js-a18def7/README
+silly asyncMap in gTP /tmp/npm-1343836470086/1343836470086-0.46689682081341743/___package.npm/davidflanagan-DataView.js-a18def7/DataView.js
+silly chmod davidflanagan-DataView.js-a18def7 755
+silly chmod README 644
+silly chmod DataView.js 644
+verbose gunzed /tmp/npm-1343836470086/1343836470086-0.46689682081341743/___package.npm/davidflanagan-DataView.js-a18def7
+verbose rm'ed /tmp/npm-1343836470086/1343836470086-0.46689682081341743/package
+verbose renamed [ '/tmp/npm-1343836470086/1343836470086-0.46689682081341743/___package.npm/davidflanagan-DataView.js-a18def7',
+verbose renamed   '/tmp/npm-1343836470086/1343836470086-0.46689682081341743/package' ]
+ERR! couldn't unpack /tmp/npm-1343836470086/1343836470086-0.46689682081341743/tmp.tgz to /tmp/npm-1343836470086/1343836470086-0.46689682081341743
+ERR! Error: ENOENT, no such file or directory '/tmp/npm-1343836470086/1343836470086-0.46689682081341743/package/package.json'
+ERR! You may report this log at:
+ERR!     <http://bugs.debian.org/npm>
+ERR! or use
+ERR!     reportbug --attach /home/marcooliveira/Documents/megamedia/zip_upload_poc/npm-debug.log npm
+ERR! 
+ERR! System Linux 3.2.0-27-generic
+ERR! command "node" "/usr/bin/npm" "install"
+ERR! cwd /home/marcooliveira/Documents/megamedia/zip_upload_poc
+ERR! node -v v0.6.12
+ERR! npm -v 1.1.4
+ERR! path /tmp/npm-1343836470086/1343836470086-0.46689682081341743/package/package.json
+ERR! code ENOENT
+ERR! message ENOENT, no such file or directory '/tmp/npm-1343836470086/1343836470086-0.46689682081341743/package/package.json'
+ERR! errno {}
+verbose exit [ 1, true ]
