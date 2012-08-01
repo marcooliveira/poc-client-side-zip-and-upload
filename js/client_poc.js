@@ -35,7 +35,7 @@
 
     //  function for creating a temporary file
     function createTempFile(callback) {
-        var tmpFilename = "tmp.zip";
+        var tmpFilename = document.getElementById("filename-input").value;
 
         // function called upon initialization of the File System API
         var onInitFs = function (filesystem) {
