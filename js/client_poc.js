@@ -33,24 +33,30 @@
         console.log('Error: ' + msg);
     }
 
-    // function called upon initialization of the File System API
-    var onInitFs = function (filesystem) {
-        function create() {
-            filesystem.root.getFile(tmpFilename, {
-                create: true
-            }, function (zipFile) {
-                callback(zipFile);
-            });
-        }
-
-        filesystem.root.getFile(tmpFilename, null, function (entry) {
-            entry.remove(create, create);
-        }, create);
-    };
- 
     //  function for creating a temporary file
     function createTempFile(callback) {
         var tmpFilename = "tmp.zip";
+
+        // function called upon initialization of the File System API
+        var onInitFs = function (filesystem) {
+            function create() {
+                filesystem.root.getFile(
+                    tmpFilename,
+                    {
+                        create: true
+                    },
+                    function (zipFile) {
+                        console.log("creating", zipFile);
+                        callback(zipFile);
+                    }
+                );
+            }
+
+            filesystem.root.getFile(tmpFilename, null, function (entry) {
+                entry.remove(create, create);
+            }, create);
+        };
+
         // allocate temporary file system
         requestFileSystem(TEMPORARY, 4 * 1024 * 1024 * 1024 /* 4GB */, onInitFs, onErrorHandler);
     }
@@ -67,7 +73,9 @@
             setCreationMethod: function (method) {
                 // method can be either Blob (in RAM) or File (persistent storage, but storage quota is enforced)
                 creationMethod = method;
-            }, addFiles: function addFiles(files, oninit, onadd, onprogress, onend) {
+            },
+
+            addFiles: function addFiles(files, oninit, onadd, onprogress, onend) {
                 var addIndex = 0;
  
                 function nextFile() {
@@ -87,24 +95,26 @@
                         nextFile();
                     }, onErrorHandler);
                 }
- 
+                
+                // if zipWriter exists, handle next file
                 if (zipWriter) nextFile();
+                // else, create the zipWriter for the selected method
                 else if (creationMethod == "Blob") {
                     writer = new zip.BlobWriter();
                     createZipWriter();
                 } else {
                     createTempFile(function (fileEntry) {
                         zipFileEntry = fileEntry;
-                        writer = new zip.FileWriter(zipFileEntry);
+                        writer       = new zip.FileWriter(zipFileEntry);
                         createZipWriter();
                     });
                 }
-            }, getBlobURL: function (callback) {
+            },
+            getBlob: function (callback) {
                 zipWriter.close(function (blob) {
-                    var blobURL = creationMethod == "Blob" ? URL.createObjectURL(blob) : zipFileEntry.toURL();
-                    callback(blobURL, function () {
-                        if (creationMethod == "Blob") URL.revokeObjectURL(blobURL);
-                    });
+
+                    callback(blob);
+
                     zipWriter = null;
                 });
             }
@@ -112,54 +122,84 @@
     })();
  
     (function () {
-        var fileInput = document.getElementById("file-input");
-        var zipProgress = document.createElement("progress");
-        var downloadButton = document.getElementById("download-button");
-        var fileList = document.getElementById("file-list");
-        var filenameInput = document.getElementById("filename-input");
-        var creationMethodInput = document.getElementById("creation-method-input");
+        var fileInput           = document.getElementById("file-input"),
+            zipProgress         = document.createElement("progress"),
+            downloadButton      = document.getElementById("download-button"),
+            fileList            = document.getElementById("file-list"),
+            filenameInput       = document.getElementById("filename-input"),
+            creationMethodInput = document.getElementById("creation-method-input")
+            uploadButton        = document.getElementById("upload-button");
+
         if (typeof requestFileSystem == "undefined") creationMethodInput.options.length = 1;
+
         model.setCreationMethod(creationMethodInput.value);
+
+        // when files are selected
         fileInput.addEventListener('change', function () {
-            fileInput.disabled = true;
+            fileInput.disabled           = true;
             creationMethodInput.disabled = true;
-            model.addFiles(fileInput.files, function () {}, function (file) {
-                var li = document.createElement("li");
-                zipProgress.value = 0;
-                zipProgress.max = 0;
-                li.textContent = file.name;
-                li.appendChild(zipProgress);
-                fileList.appendChild(li);
-            }, function (current, total) {
-                zipProgress.value = current;
-                zipProgress.max = total;
-            }, function () {
-                if (zipProgress.parentNode) zipProgress.parentNode.removeChild(zipProgress);
-                fileInput.value = "";
-                fileInput.disabled = false;
-            });
+
+            model.addFiles(
+                // files
+                fileInput.files,
+                // oninit
+                function () {
+                    console.log("Initializing ZIP");
+                },
+                //onadd
+                function (file) {
+                    console.log("Adding file", file.name);
+
+                    var li = document.createElement("li");
+                    zipProgress.value = 0;
+                    zipProgress.max = 0;
+                    li.textContent = file.name;
+                    li.appendChild(zipProgress);
+                    fileList.appendChild(li);
+                },
+                // onprogress
+                function (current, total) {
+                    zipProgress.value = current;
+                    zipProgress.max = total;
+                },
+                // onend
+                function () {
+                    console.log("Finished ZIP");
+
+                    if (zipProgress.parentNode) zipProgress.parentNode.removeChild(zipProgress);
+                    fileInput.value = "";
+                    fileInput.disabled = false;
+                }
+            );
         }, false);
+
+        // when the creation method is changed, update model
         creationMethodInput.addEventListener('change', function () {
             model.setCreationMethod(creationMethodInput.value);
         }, false);
-        downloadButton.addEventListener("click", function (event) {
-            var target = event.target,
-                entry;
-            if (!downloadButton.download) {
-                model.getBlobURL(function (blobURL, revokeBlobURL) {
-                    var clickEvent = document.createEvent("MouseEvent");
-                    clickEvent.initMouseEvent("click", true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-                    downloadButton.href = blobURL;
-                    downloadButton.download = filenameInput.value;
-                    downloadButton.dispatchEvent(clickEvent);
-                    creationMethodInput.disabled = false;
-                    fileList.innerHTML = "";
-                    setTimeout(revokeBlobURL, 1);
-                });
-                event.preventDefault();
-                return false;
-            }
-        }, false);
+
+        // add listener to upload link
+        uploadButton.addEventListener("click", function (event) {
+            // get the generated file
+            model.getBlob(function (blob) {
+                // create new request for submiting form data
+                var request  = new XMLHttpRequest(),
+                    formData = new FormData();
+
+                // append file to the form
+                formData.append("file", blob, filenameInput.value);
+
+                // configure request
+                request.open("POST","/upload", true);
+                request.onreadystatechange = function () {
+
+                    console.log(arguments);
+                };
+
+                // execute request
+                request.send(formData);
+            });
+        });
  
     })();
  
