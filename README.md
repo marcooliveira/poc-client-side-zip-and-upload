@@ -13,7 +13,7 @@ tested with Chrome 20.0.
 In order to run this POC, you must have [node.js](http://nodejs.org)
 and [npm](https://npmjs.org/) installed.
 
-Once the requirements are met, simply run:
+Once the requirements are met, clone the repository and simply run:
 
 1. `npm install`
   - This will install all the dependencies of the project
