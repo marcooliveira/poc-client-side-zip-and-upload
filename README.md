@@ -1,9 +1,9 @@
-POC - Client-side ZIP and upload a file
-=======================================
+POC - Client-side ZIP and upload a list of files
+================================================
 
 This is a simple Proof of Concept of an application that generates
 a `ZIP` file from a list of files that the user has selected from his
-filesystem.
+local filesystem.
 
 Note that this is not compatible with all browsers. It has only been
 tested with Chrome 20.0.
