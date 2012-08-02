@@ -803,9 +803,29 @@
 				var header, filename, date;
 
 				function writeHeader(callback) {
-					var data;
-					date = options.lastModDate || new Date();
+					var data,
+						encryption,
+						aes_encryption_enabled
+					;
+
+					encryption = options.encryption || {};
+					
+					// TODO: comment below
+					encryption = {
+						mode: "AES",
+						version: "AE-2",
+						password: "mypass"
+					}
+					
+					// check if AES encryption is enabled
+					aes_encryption_enabled = typeof encryption.mode != "undefined" ? true : false;
+
+					date       = options.lastModDate || new Date();
+
+					// create new header
 					header = getDataHelper(26);
+
+					// TODO: check what this files array is for. Don't forget that files metadata must be encrypted also
 					files[name] = {
 						headerArray : header.array,
 						directory : options.directory,
@@ -813,7 +833,10 @@
 						offset : datalength,
 						comment : getBytes(encodeUTF8(options.comment || ""))
 					};
+
+					// set "local file header signature"
 					header.view.setUint32(0, 0x14000808);
+
 					if (options.version)
 						header.view.setUint8(0, options.version);
 					if (!dontDeflate && options.level != 0)
@@ -859,16 +882,26 @@
 						throw ERR_DUPLICATED_NAME;
 					filename = getBytes(encodeUTF8(name));
 					filenames.push(name);
+
+					// comments by Marco Oliveira <me@marcooliveira.com>
+					// write the "local file header"
+					// after it has been written, the callback below is invoked, which writes the "file data"
+					// once that is also written, write the "data descriptor"
 					writeHeader(function() {
 						if (reader)
+							// if it's not supposed to deflate (compress) the file, simply copy it
 							if (dontDeflate || options.level == 0)
 								copy(reader, writer, 0, reader.size, true, writeFooter, onprogress, onreaderror, onwriteerror);
+							// else, deflate it into the archive
 							else
 								worker = deflate(reader, writer, options.level, writeFooter, onprogress, onreaderror, onwriteerror);
 						else
 							writeFooter();
 					}, onwriteerror);
 				}
+
+				// comments by Marco Oliveira <me@marcooliveira.com>
+				// going to write a single file into archive
 
 				if (reader)
 					reader.init(writeFile, onreaderror);
