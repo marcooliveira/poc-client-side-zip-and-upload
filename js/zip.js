@@ -800,26 +800,24 @@
 
 		return {
 			add : function(name, reader, onend, onprogress, options) {
-				var header, filename, date;
+				var header, filename, date, encryption, aes_encryption_enabled;
+
+				options    = options || {};
+				encryption = options.encryption || {};
+				
+				// TODO: comment below
+				encryption = {
+					mode: "AES",
+					version: "AE-2",
+					password: "mypass",
+					strength: 256
+				}
+				
+				// check if AES encryption is enabled
+				aes_encryption_enabled = typeof encryption.mode != "undefined" ? true : false;
 
 				function writeHeader(callback) {
-					var data,
-						encryption,
-						aes_encryption_enabled
-					;
-
-					encryption = options.encryption || {};
-					
-					// TODO: comment below
-					encryption = {
-						mode: "AES",
-						version: "AE-2",
-						password: "mypass",
-						strength: 256
-					}
-					
-					// check if AES encryption is enabled
-					aes_encryption_enabled = typeof encryption.mode != "undefined" ? true : false;
+					var data;
 
 					date = options.lastModDate || new Date();
 
@@ -836,13 +834,12 @@
 					};
 
 					// set "local file header signature"
-					//header.view.setUint32(0, 0x14000808);
 					header.view.setUint32(0, 0x04034b50,true);
 
 					//if (options.version)
 					//	header.view.setUint8(0, options.version);
 					if (!dontDeflate && options.level != 0)
-						header.view.setUint16(4, 99/*0x0862*/,true); // changed to 0xXX62, in order to support central directory encryption
+						header.view.setUint16(4, 0x3E3E,true);
 
 					// set "general purpose bit flags"
 					// if AES encryption is enabled, the bit 0 of the "general purpose bit flags" must be set to 1
@@ -861,8 +858,10 @@
 							header.view.setUint32(14,0x00000000);
 						}
 					}
+
 					// set "last mod file time"
 					header.view.setUint16(10, (((date.getHours() << 6) | date.getMinutes()) << 5) | date.getSeconds() / 2, true);
+
 					// set "last mod file date"
 					header.view.setUint16(12, ((((date.getFullYear() - 1980) << 4) | (date.getMonth() + 1)) << 5) | date.getDate(), true);
 
