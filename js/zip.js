@@ -814,16 +814,17 @@
 					encryption = {
 						mode: "AES",
 						version: "AE-2",
-						password: "mypass"
+						password: "mypass",
+						strength: 256
 					}
 					
 					// check if AES encryption is enabled
 					aes_encryption_enabled = typeof encryption.mode != "undefined" ? true : false;
 
-					date       = options.lastModDate || new Date();
+					date = options.lastModDate || new Date();
 
 					// create new header
-					header = getDataHelper(26);
+					header = getDataHelper(30);
 
 					// TODO: check what this files array is for. Don't forget that files metadata must be encrypted also
 					files[name] = {
@@ -835,20 +836,92 @@
 					};
 
 					// set "local file header signature"
-					header.view.setUint32(0, 0x14000808);
+					//header.view.setUint32(0, 0x14000808);
+					header.view.setUint32(0, 0x04034b50,true);
 
-					if (options.version)
-						header.view.setUint8(0, options.version);
+					//if (options.version)
+					//	header.view.setUint8(0, options.version);
 					if (!dontDeflate && options.level != 0)
-						header.view.setUint16(4, 0x0800);
-					header.view.setUint16(6, (((date.getHours() << 6) | date.getMinutes()) << 5) | date.getSeconds() / 2, true);
-					header.view.setUint16(8, ((((date.getFullYear() - 1980) << 4) | (date.getMonth() + 1)) << 5) | date.getDate(), true);
-					header.view.setUint16(22, filename.length, true);
-					data = getDataHelper(30 + filename.length);
-					data.view.setUint32(0, 0x504b0304);
-					data.array.set(header.array, 4);
-					data.array.set([], 30); // FIXME: remove when chrome 18 will be stable (14: OK, 16: KO, 17: OK)
+						header.view.setUint16(4, 99/*0x0862*/,true); // changed to 0xXX62, in order to support central directory encryption
+
+					// set "general purpose bit flags"
+					// if AES encryption is enabled, the bit 0 of the "general purpose bit flags" must be set to 1
+					if (aes_encryption_enabled) {
+						header.view.setUint16(6,0x9000, true); // bit 0 is set to denote encrypted file, and bit 3 is enabled so that the "data descriptor" is used
+
+						// set compression method
+						header.view.setUint16(8,99);
+
+						// set CRC
+						if (encryption.mode == "AE-1") {
+							// TODO: files encrypted using the AE-1 method do include the standard Zip CRC value
+						}
+						else if (encryption.mode == "AE-2") {
+							// TODO: make sure that the library does not rewrite this value
+							header.view.setUint32(14,0x00000000);
+						}
+					}
+					// set "last mod file time"
+					header.view.setUint16(10, (((date.getHours() << 6) | date.getMinutes()) << 5) | date.getSeconds() / 2, true);
+					// set "last mod file date"
+					header.view.setUint16(12, ((((date.getFullYear() - 1980) << 4) | (date.getMonth() + 1)) << 5) | date.getDate(), true);
+
+					// set "file name length"
+					header.view.setUint16(26, filename.length, true);
+
+					// create a new header that will accommodate the previous header data + "file name" + "extra field"
+					data = getDataHelper(30 + filename.length + (aes_encryption_enabled ? 11 : 0));
+					data.array.set(header.array, 0);
+
+					//data.array.set([], 30); // FIXME: remove when chrome 18 will be stable (14: OK, 16: KO, 17: OK)
+					// set "file name"
 					data.array.set(filename, 30);
+
+					// set "extra field"
+					if (aes_encryption_enabled) {
+						var extra_field_offset = 30 + filename.length;
+
+						// set "header id"
+						data.view.setUint16(extra_field_offset, 0x9901, true);
+
+						// set "data size"
+						data.view.setUint16(extra_field_offset + 2, 7, true);
+
+						// set "integer version number specific to the zip vendor"
+						if (encryption.mode == "AE-1") {
+							data.view.setUint16(extra_field_offset + 4, 0x0001, true);
+						}
+						else if (encryption.mode == "AE-2") {
+							data.view.setUint16(extra_field_offset + 4, 0x0002, true);
+						}
+
+						// set "2-character vendor ID"
+						buff 		  = new ArrayBuffer(2);
+						var dataview  = new DataView(buff);
+						dataview.setUint16(0, 0x4145); // "AE"
+						data.array.set(dataview, extra_field_offset + 6);
+
+						// set "AES encryption strength"
+						var strength;
+						switch (encryption.strength) {
+							case 128:
+								strength = 0x01;
+								break;
+							case 192:
+								strength = 0x02;
+								break;
+							case 256:
+								strength = 0x03;
+								break;
+							default:
+								throw new Error("AES encryption strength not supported: " + encryption.strength);
+						}
+						data.view.setUint8(extra_field_offset + 8, strength, true);
+					}
+
+					// set compression method
+					data.view.setUint16(extra_field_offset + 9, 99, true);
+
 					datalength += data.array.length;
 					writer.writeUint8Array(data.array, callback, onwriteerror);
 				}
@@ -856,7 +929,7 @@
 				function writeFooter(compressedLength, crc32) {
 					var footer = getDataHelper(16);
 					datalength += compressedLength || 0;
-					footer.view.setUint32(0, 0x504b0708);
+					footer.view.setUint32(0, 0x08074b50, true);
 					if (typeof crc32 != "undefined") {
 						header.view.setUint32(10, crc32, true);
 						footer.view.setUint32(4, crc32, true);
@@ -893,6 +966,8 @@
 							if (dontDeflate || options.level == 0)
 								copy(reader, writer, 0, reader.size, true, writeFooter, onprogress, onreaderror, onwriteerror);
 							// else, deflate it into the archive
+
+							// once the data has been deflated, handle the "data descriptor" (writeFooter)
 							else
 								worker = deflate(reader, writer, options.level, writeFooter, onprogress, onreaderror, onwriteerror);
 						else
