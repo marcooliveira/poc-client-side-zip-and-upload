@@ -818,8 +818,10 @@
 						comment : getBytes(encodeUTF8(options.comment || ""))
 					};
 
-					// set "version needed to extract" and "general purpose bit flag"
-					header.view.setUint32(0, 0x14000808); // 0001 0100 0000 0000 0000 1000 0000 1000
+					// set:
+					// "version needed to extract": 0001 0100 0000 0000 - 0x1400
+					// "general purpose bit flag":  0000 1000 0000 1000 - 0x0808
+					header.view.setUint32(0, 0x14000808);
 					if (options.version)
 						header.view.setUint8(0, options.version);
 					if (!dontDeflate && options.level != 0)
