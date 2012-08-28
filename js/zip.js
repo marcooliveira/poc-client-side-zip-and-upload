@@ -806,12 +806,12 @@
 				encryption = options.encryption || {};
 				
 				// TODO: comment below
-				encryption = {
-					mode: "AES",
-					version: "AE-2",
-					password: "mypass",
-					strength: 256
-				}
+//				encryption = {
+//					mode: "AES",
+//					version: "AE-2",
+//					password: "mypass",
+//					strength: 256
+//				}
 				
 				// check if AES encryption is enabled
 				aes_encryption_enabled = typeof encryption.mode != "undefined" ? true : false;
