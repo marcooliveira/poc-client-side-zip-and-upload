@@ -805,7 +805,11 @@
 				function writeHeader(callback) {
 					var data;
 					date = options.lastModDate || new Date();
+
+					// create new header
 					header = getDataHelper(26);
+
+					// TODO: check what this files array is for. Don't forget that files metadata must be encrypted also
 					files[name] = {
 						headerArray : header.array,
 						directory : options.directory,
@@ -813,18 +817,30 @@
 						offset : datalength,
 						comment : getBytes(encodeUTF8(options.comment || ""))
 					};
-					header.view.setUint32(0, 0x14000808);
+
+					// set "version needed to extract" and "general purpose bit flag"
+					header.view.setUint32(0, 0x14000808); // 0001 0100 0000 0000 0000 1000 0000 1000
 					if (options.version)
 						header.view.setUint8(0, options.version);
 					if (!dontDeflate && options.level != 0)
 						header.view.setUint16(4, 0x0800);
+
+					// set "last mod file time"
 					header.view.setUint16(6, (((date.getHours() << 6) | date.getMinutes()) << 5) | date.getSeconds() / 2, true);
+
+					// set "last mod file date"
 					header.view.setUint16(8, ((((date.getFullYear() - 1980) << 4) | (date.getMonth() + 1)) << 5) | date.getDate(), true);
+
+					// set "file name length"
 					header.view.setUint16(22, filename.length, true);
+
+					// create a new header that will accommodate the previous header data + "file name" + "extra field"
 					data = getDataHelper(30 + filename.length);
-					data.view.setUint32(0, 0x504b0304);
-					data.array.set(header.array, 4);
+					data.view.setUint32(0, 0x504b0304); // set the local file header signature, 0x04034b50 represented in big-endian
+					data.array.set(header.array, 4); // merge partial header with the container of the whole header
 					data.array.set([], 30); // FIXME: remove when chrome 18 will be stable (14: OK, 16: KO, 17: OK)
+
+					// set "file name"
 					data.array.set(filename, 30);
 					datalength += data.array.length;
 					writer.writeUint8Array(data.array, callback, onwriteerror);
@@ -859,10 +875,19 @@
 						throw ERR_DUPLICATED_NAME;
 					filename = getBytes(encodeUTF8(name));
 					filenames.push(name);
+
+					// comments by Marco Oliveira <me@marcooliveira.com>
+					// write the "local file header"
+					// after it has been written, the callback below is invoked, which writes the "file data"
+					// once that is also written, write the "data descriptor"
 					writeHeader(function() {
 						if (reader)
+							// if it's not supposed to deflate (compress) the file, simply copy it
 							if (dontDeflate || options.level == 0)
 								copy(reader, writer, 0, reader.size, true, writeFooter, onprogress, onreaderror, onwriteerror);
+							// else, deflate it into the archive
+
+							// once the data has been deflated, handle the "data descriptor" (writeFooter)
 							else
 								worker = deflate(reader, writer, options.level, writeFooter, onprogress, onreaderror, onwriteerror);
 						else
@@ -870,6 +895,7 @@
 					}, onwriteerror);
 				}
 
+				// going to write a single file into archive
 				if (reader)
 					reader.init(writeFile, onreaderror);
 				else
