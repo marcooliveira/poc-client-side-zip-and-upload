@@ -807,8 +807,8 @@
 					date = options.lastModDate || new Date();
 
 					// create new header
-					// note that this header does not store the "local file header signature", "file name length" and "extra field length"
-					// another header is then allocated to store these fields
+					// note that this header does not store the "local file header signature", "file name" and "extra field".
+					// Another header is then allocated to store these fields, which is why it is 26 bytes long
 					header = getDataHelper(26);
 
 					// TODO: check what this files array is for. Don't forget that files metadata must be encrypted also
@@ -826,12 +826,14 @@
 					header.view.setUint32(0, 0x14000808);
 
 					// if a specific version was set, redefine "version needed to extract"
-					if (options.version)
+					if (options.version) {
 						header.view.setUint8(0, options.version);
+					}
 
 					// if compression is enabled, set the "compression method" to 0x0800 - 0000 1000 0000 0000
-					if (!dontDeflate && options.level != 0)
+					if (!dontDeflate && options.level != 0) {
 						header.view.setUint16(4, 0x0800);
+					}
 
 					// set "last mod file time"
 					header.view.setUint16(6, (((date.getHours() << 6) | date.getMinutes()) << 5) | date.getSeconds() / 2, true);
@@ -855,7 +857,7 @@
 
 					// set "file name"
 					data.array.set(filename, 30);
-					
+
 					datalength += data.array.length;
 					writer.writeUint8Array(data.array, callback, onwriteerror);
 				}
