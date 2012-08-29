@@ -807,6 +807,8 @@
 					date = options.lastModDate || new Date();
 
 					// create new header
+					// note that this header does not store the "local file header signature", "file name length" and "extra field length"
+					// another header is then allocated to store these fields
 					header = getDataHelper(26);
 
 					// TODO: check what this files array is for. Don't forget that files metadata must be encrypted also
@@ -822,8 +824,12 @@
 					// "version needed to extract": 0001 0100 0000 0000 - 0x1400
 					// "general purpose bit flag":  0000 1000 0000 1000 - 0x0808
 					header.view.setUint32(0, 0x14000808);
+
+					// if a specific version was set, redefine "version needed to extract"
 					if (options.version)
 						header.view.setUint8(0, options.version);
+
+					// if compression is enabled, set the "compression method" to 0x0800 - 0000 1000 0000 0000
 					if (!dontDeflate && options.level != 0)
 						header.view.setUint16(4, 0x0800);
 
@@ -838,12 +844,18 @@
 
 					// create a new header that will accommodate the previous header data + "file name" + "extra field"
 					data = getDataHelper(30 + filename.length);
-					data.view.setUint32(0, 0x504b0304); // set the local file header signature, 0x04034b50 represented in big-endian
-					data.array.set(header.array, 4); // merge partial header with the container of the whole header
-					data.array.set([], 30); // FIXME: remove when chrome 18 will be stable (14: OK, 16: KO, 17: OK)
+
+					// set "local file header signature", 0x04034b50, represented in big-endian
+					data.view.setUint32(0, 0x504b0304);
+
+					// merge partial header with the container of the whole header
+					data.array.set(header.array, 4);
+
+					data.array.set([], 30); // FIXME: remove when chrome 18 is stable (14: OK, 16: KO, 17: OK)
 
 					// set "file name"
 					data.array.set(filename, 30);
+					
 					datalength += data.array.length;
 					writer.writeUint8Array(data.array, callback, onwriteerror);
 				}
