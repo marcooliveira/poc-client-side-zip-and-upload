@@ -11,7 +11,7 @@
     "node": "*"
   },
   "dependencies": {
-    "express": "3.0.x"
+    "express": "4.17.x"
   },
   "scripts": {
     "start": "node server.js"
